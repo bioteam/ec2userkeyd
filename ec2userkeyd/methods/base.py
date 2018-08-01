@@ -1,0 +1,4 @@
+
+class BaseCredentialSource:
+    pass
+
