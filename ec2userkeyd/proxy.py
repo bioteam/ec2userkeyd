@@ -4,9 +4,9 @@ import datetime
 import subprocess
 
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 
-import utils
+from ec2userkeyd import utils
 
 
 app = Flask('ec2userkeyd')
@@ -23,19 +23,12 @@ def role_data(rev, role):
     username = utils.get_user_from_port(remote_port)
 
     for method in credential_methods:
-        credentials = method.get(username)
+        credentials = method.get(username, role)
         if credentials:
             return jsonify(credentials)
-    
-    return jsonify({
-        "Code": "Failed",
-        "LastUpdated": datetime.datetime.now().isoformat(),
-        "Type": "AWS-HMAC",
-        "AccessKeyId": "ASIAIOSFODNN7EXAMPLE",
-        "SecretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-        "Token": "InvalidToken",
-        "Expiration": datetime.datetime.now().isoformat()
-    })
+
+    # No credentials were found...
+    abort(404)
 
 
 @app.route('/', defaults={'path': ''})
