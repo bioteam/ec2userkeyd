@@ -1,4 +1,4 @@
-from ec2userkeyd import clients, utils
+from ec2userkeyd import clients, utils, iam_policy
 from ec2userkeyd.methods.base import BaseCredentialSource
 
 
@@ -17,7 +17,7 @@ from ec2userkeyd.methods.base import BaseCredentialSource
 # you could have different lists of methods for your normal users
 # versus your service accounts.
 
-class RestrictedInstanceRole:
+class RestrictedInstanceRole(BaseCredentialSource):
     """AssumeRole to this instance's role, restricted by the IAM user's
     permissions.
     """
@@ -29,15 +29,12 @@ class RestrictedInstanceRole:
                 self.config.iam_name_pattern.format(username=username))
             if not statements:
                 return None
-        except clients.iam.exceptions.ClientError as ex:
-            if 'AccessDenied' not in str(ex):
-                raise ex
-            return None
         
-        if self.config.compress_user_policy:
-            statements = self.compress_statements(statements)
-
-        try:
+            if self.config.compress_user_policy:
+                statements = self.compress_statements(statements)
+                if not statements:
+                    return None
+            
             response = clients.sts.assume_role(
                 RoleArn=clients.current_role_arn(),
                 RoleSessionName=username,
@@ -49,5 +46,19 @@ class RestrictedInstanceRole:
             return None
 
     def compress_statements(self, statements):
-        # no-op for now
-        return statements
+        # The effective policy of the user will be the permissions
+        # granted by the role, unioned by the permissions granted by
+        # these statements.
+        role_statements = clients.get_iam_role_policy_statements(
+            clients.current_role_arn())
+        policy = iam_policy.Policy(role_statements)
+
+        retval = []
+        for s in statements:
+            if s['Effect'] == 'Allow' and s in policy:
+                retval.append(s)
+                    
+            if s['Effect'] == 'Deny' and s not in policy:
+                retval.append(s)
+
+        return retval

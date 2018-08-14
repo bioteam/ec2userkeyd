@@ -1,12 +1,9 @@
 import datetime
 
-import responses
-
 from tests import mock_config
 from ec2userkeyd.methods import user_role
 
 
-@responses.activate
 def test_user_role_success(mocker, mock_config):
     mock_config.update({
         'method_UserRole': {
@@ -49,7 +46,6 @@ def test_user_role_success(mocker, mock_config):
     )
 
 
-@responses.activate
 def test_user_role_failure(mocker, mock_config):
     mock_config.update({
         'method_UserRole': {

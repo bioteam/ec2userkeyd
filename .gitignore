@@ -1,4 +1,5 @@
 .cov2emacs.log
 .coverage
+htmlcov/
 .pytest_cache/
 .python-version
