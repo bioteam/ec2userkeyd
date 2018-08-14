@@ -35,6 +35,8 @@ def role_data(rev, role):
 @app.route('/<path:path>')
 def catch_all(path):
     return requests.get('http://169.254.169.254/' + path).text
+    #return requests.get('http://127.0.0.1/' + path).text
+    #return 'hello'
 
 
 ###

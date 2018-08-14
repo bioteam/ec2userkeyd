@@ -1,2 +1,4 @@
 
 from ec2userkeyd.methods.user_role import UserRole
+from ec2userkeyd.methods.restricted_instance_role import RestrictedInstanceRole
+from ec2userkeyd.methods.instance_role import InstanceRole

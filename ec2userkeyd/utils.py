@@ -23,7 +23,7 @@ def get_user_from_port(port):
     username = None
     if platform.system() == 'Linux':
         ss_out = subprocess.check_output(
-            ['ss', '-atne', 'sport = :{}'.format(port)])
+            ['ss', '-atne', f'sport = :{port}'])
         uid_match = re.search(" uid:([0-9]+) ", ss_out.decode('utf-8'))
 
         if uid_match:
@@ -35,10 +35,10 @@ def get_user_from_port(port):
 
     elif platform.system() == 'Darwin':
         lsof_out = subprocess.check_output(
-            ['lsof', '-n', '-i4TCP:{}'.format(port)])
+            ['lsof', '-n', f'-i4TCP:{port}'])
         # extract the third space-separated field of the line that
         # contains :{port}->
-        user_match = re.search("^\S+\s+\S+\s+(\S+).*:{}->.*$".format(port),
+        user_match = re.search(f"^\S+\s+\S+\s+(\S+).*:{port}->.*$",
                                lsof_out.decode('utf-8'),
                                flags=re.MULTILINE)
 
@@ -46,8 +46,8 @@ def get_user_from_port(port):
             username = user_match.group(1)
 
     else:
-        raise NotImplementedError('Platform {} is not supported'.format(
-            platform.system()))
+        raise NotImplementedError(
+            f'Platform {platform.system()} is not supported')
         
     return username
 

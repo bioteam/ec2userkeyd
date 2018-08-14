@@ -1,10 +1,19 @@
 # Functions related to command-line use
 
-from ec2userkeyd import proxy, methods
+import click
 
-def cli(cfgfile):
+from ec2userkeyd import proxy, methods, config
+
+
+@click.group()
+@click.option('-f', '--config', 'cfgfile', metavar='FILE',
+              help='Configuration file')
+@click.option('-d', '--debug', is_flag=True, help='Enable debug output')
+def cli(cfgfile, debug):
     config.update(cfgfile)
 
+
+@click.command(help="Run the credential serve daemon")
 def daemon():
     # Instantiate credential methods
     proxy.credential_methods = [
@@ -18,3 +27,5 @@ def daemon():
     proxy.Iptables(config.general.daemon_port).activate()
     # Start the daemon
     proxy.app.run()
+cli.add_command(daemon)
+

@@ -68,3 +68,10 @@ class method_UserKeysSecretsManager:
     # This method stores user API keys in AWS Secrets Manager. The
     # instance role must have access to the secretsmanager API.
     pass
+
+
+###
+### Helper functions
+
+def update(filename):
+    pass

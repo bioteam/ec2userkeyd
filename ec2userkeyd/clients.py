@@ -48,7 +48,7 @@ def get_iam_role_policy_statements(rolearn):
     """
     statements = []
 
-    assert ':role/' in rolearn, '{} is not a role arn'.format(rolearn)
+    assert ':role/' in rolearn, f'{rolearn} is not a role arn'
     rolename = rolearn.split('/')[-1]
     role = iam_resource.Role(rolename)
 
