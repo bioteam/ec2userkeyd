@@ -3,6 +3,8 @@
 class general:
     daemon_port = 808
 
+    iptables = '/sbin/iptables'
+
     # Supported methods:
     # - UserRole
     # - CreateUserRole

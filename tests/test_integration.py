@@ -1,5 +1,5 @@
 import sys
-#import time
+import time
 #import inspect
 import threading
 import contextlib
@@ -28,27 +28,37 @@ def sim_iam():
 
 
 @contextlib.contextmanager
-def daemon():
+def daemon(mocker):
+    mocker.patch('atexit.register')
+    
     runner = CliRunner()
     thread = threading.Thread(target=(
         lambda: setattr(runner, 'result', runner.invoke(cli, ['daemon']))))
     thread.start()
+    time.sleep(0.25)
 
     try:
         yield
     finally:
         # Shutdown the Werkzeug server with a crazy hack
+        shutdown_sent = False
         for frame in sys._current_frames().values():
             while frame is not None:
                 if 'srv' in frame.f_locals:
                     srvr = frame.f_locals['srv']
                     srvr.shutdown()
+                    shutdown_sent = True
                     break
                 frame = frame.f_back
             else:
                 continue
             break
-        thread.join()
+        if shutdown_sent:
+            print("Waiting for server to stop...")
+            thread.join()
+        else:
+            print("Unable to send shutdown signal!")
+            
         if hasattr(runner, 'result'):
             print(runner.result.output)
 
@@ -78,24 +88,26 @@ def mock_local_metadata():
 pytestmark = pytest.mark.integration
 
 
-def test_integration_smoke(sim_iam, mock_local_metadata, mock_config):
+def test_integration_smoke(sim_iam, mock_local_metadata, mock_config, mocker):
     mock_config.update({
-        'general': {'daemon_port': 5000}
+        'general': {'daemon_port': 5000, 'iptables': '/bin/true'}
     })
-    with daemon():
+    with daemon(mocker):
         result = requests.get('http://localhost:5000/')
         assert result.text == 'latest\n'
 
     
-def test_integration_instance_role(sim_iam, mock_local_metadata, mock_config):
+def test_integration_instance_role(sim_iam, mock_local_metadata, mock_config,
+                                   mocker):
     mock_config.update({
         'general': {'daemon_port': 5000,
+                    'iptables': '/bin/true',
                     'credential_methods': ['InstanceRole']},
         'method_InstanceRole': {'deny_assumerole': False,
                                 'deny_secretsmanager': False,
                                 'fail_safe': False}
     })
-    with daemon():
+    with daemon(mocker):
         result = requests.get(
             'http://localhost:5000/latest/meta-data/iam/security-credentials/trl')
         j = result.json()

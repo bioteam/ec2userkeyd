@@ -2,3 +2,9 @@ flask
 click
 requests
 boto3
+setuptools_scm
+pytest
+pytest-mock
+pytest-cov
+git+https://github.com/kgutwin/moto.git@iam_get_policy
+responses

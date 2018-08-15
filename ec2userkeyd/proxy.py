@@ -6,7 +6,7 @@ import subprocess
 import requests
 from flask import Flask, jsonify, request, abort
 
-from ec2userkeyd import utils
+from ec2userkeyd import utils, config
 
 
 app = Flask('ec2userkeyd')
@@ -59,7 +59,8 @@ class Iptables:
             return
 
         for rule in self.rules:
-            subprocess.check_call(['iptables', '-t', 'nat', '-A'] + rule)
+            subprocess.check_call([config.general.iptables, '-t', 'nat',
+                                   '-A'] + rule)
 
         atexit.register(self.deactivate)
 
@@ -68,4 +69,5 @@ class Iptables:
             return
 
         for rule in self.rules:
-            subprocess.check_call(['iptables', '-t', 'nat', '-D'] + rule)
+            subprocess.check_call([config.general.iptables, '-t', 'nat',
+                                   '-D'] + rule)

@@ -32,6 +32,14 @@ def get_user_from_port(port):
                 username = pwd.getpwuid(uid).pw_name
             except KeyError:
                 pass
+        elif f':{port}' in ss_out.decode('utf-8'):
+            # ss doesn't seem to print the uid:0 if the socket comes
+            # from root
+            uid = 0
+            try:
+                username = pwd.getpwuid(uid).pw_name
+            except KeyError:
+                pass
 
     elif platform.system() == 'Darwin':
         lsof_out = subprocess.check_output(
