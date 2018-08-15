@@ -6,6 +6,7 @@ pipelines:
         caches:
           - pip
         script:
+          - mkdir ~/.aws && echo [default] >> ~/.aws/credentials && echo aws_access_key_id = AKIA4HDGHRJJCEXAMPLE >> ~/.aws/credentials && echo aws_secret_access_key = 8oZMzMQpPAZvMKGIIEJkkiaAnnHKY1k+EXAMPLE >> ~/.aws/credentials
           - pip install -r requirements.txt
           - pip install .
-          - pytest -vv --integration --cov
+          - pytest -vv --integration --cov=ec2userkeyd
