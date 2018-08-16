@@ -7,7 +7,7 @@ from ec2userkeyd import proxy, methods, config
 
 @click.group()
 @click.option('-f', '--config', 'cfgfile', metavar='FILE',
-              help='Configuration file')
+              default='/etc/ec2userkeyd.conf', help='Configuration file')
 @click.option('-d', '--debug', is_flag=True, help='Enable debug output')
 def cli(cfgfile, debug):
     config.update(cfgfile)

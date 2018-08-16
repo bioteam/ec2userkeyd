@@ -1,4 +1,6 @@
-# Configuration settings
+import os
+import configparser
+
 
 class general:
     daemon_port = 808
@@ -76,4 +78,35 @@ class method_UserKeysSecretsManager:
 ### Helper functions
 
 def update(filename):
-    pass
+    config = configparser.ConfigParser()
+    config.read([filename])
+    for section in config.sections():
+        if section not in [k for k, v in globals().items() if type(v) == type]:
+            raise Exception(f'malformed config file: invalid section'
+                            f' {section}')
+        klass = globals()[section]
+        for option in config.options(section):
+            if hasattr(klass, option):
+                attr = getattr(klass, option)
+                try:
+                    if type(attr) == str:
+                        setattr(klass, option, config.get(section, option))
+                    elif type(attr) == int:
+                        setattr(klass, option, config.getint(section, option))
+                    elif type(attr) == bool:
+                        setattr(klass, option,
+                                config.getboolean(section, option))
+                    elif type(attr) == list:
+                        config_val = config.get(section, option)
+                        parsed_val = [i.strip() for i in config_val.split(',')]
+                        if all(type(v) == int for v in attr):
+                            parsed_val = [int(i) for i in parsed_val]
+                        setattr(klass, option, parsed_val)
+                except ValueError:
+                    raise ValueError(
+                        f'invalid value for {option} in config section'
+                        f' {section}: {config.get(section, option)}')
+            else:
+                raise Exception(f'malformed config file: invalid option'
+                                f' {option} in section {section}')
+        
