@@ -15,7 +15,10 @@ setup(
     description="EC2 user credential daemon",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=['ec2userkeyd'],
+    packages=[
+        'ec2userkeyd',
+        'ec2userkeyd.methods'
+    ],
     entry_points={
         'console_scripts': ['ec2userkeyd=ec2userkeyd.cli:cli']
     },
