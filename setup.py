@@ -19,6 +19,7 @@ setup(
     entry_points={
         'console_scripts': ['ec2userkeyd=ec2userkeyd.cli:cli']
     },
+    python_requires='>=3.6',
     setup_requires=['setuptools_scm'],
     install_requires=requirements,
     classifiers=[
