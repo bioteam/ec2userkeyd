@@ -1,6 +1,6 @@
 # tests require: ['pytest', 'pytest-mock', 'pytest-cov', 'responses']
 
-from distutils.core import setup
+from setuptools import setup
 
 requirements = ['flask', 'click', 'requests', 'boto3']
 
