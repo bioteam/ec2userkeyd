@@ -1,5 +1,9 @@
 import os
+import logging
 import configparser
+
+
+logger = logging.getLogger(__name__)
 
 
 class general:
@@ -14,6 +18,10 @@ class general:
     # - InstanceRole
     # - UserKeysSecretsManager
     credential_methods = ['UserRole', 'RestrictedInstanceRole', 'InstanceRole']
+
+    log_level = logging.ERROR
+    log_console = False
+    log_syslog = True
 
 
 class method_UserRole:
@@ -78,6 +86,7 @@ class method_UserKeysSecretsManager:
 ### Helper functions
 
 def update(filename):
+    logger.info(f'Reading config from {filename}')
     config = configparser.ConfigParser()
     config.read([filename])
     for section in config.sections():
@@ -88,6 +97,8 @@ def update(filename):
         for option in config.options(section):
             if hasattr(klass, option):
                 attr = getattr(klass, option)
+                logger.debug(f'update {klass}.{option} to '
+                             f'{config.get(section, option)}')
                 try:
                     if type(attr) == str:
                         setattr(klass, option, config.get(section, option))
