@@ -11,3 +11,5 @@ class BaseCredentialSource:
         classname = 'method_' + self.__class__.__name__
         return getattr(config, classname)
             
+    def __str__(self):
+        return self.__class__.__name__

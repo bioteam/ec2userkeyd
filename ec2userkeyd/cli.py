@@ -17,7 +17,7 @@ def setup_logging():
 
     # let's disable debugging boto logs
     if config.general.log_level == logging.DEBUG:
-        for module in ['boto3', 'botocore', 'nose']:
+        for module in ['boto3', 'botocore', 'nose', 'urllib3']:
             logging.getLogger(module).setLevel(logging.WARNING)
     
     if config.general.log_console:
@@ -29,7 +29,7 @@ def setup_logging():
     if config.general.log_syslog:
         syslog = logging.handlers.SysLogHandler(address='/dev/log')
         syslog.setFormatter(logging.Formatter(
-            '%(processName)s[%(process)d]: [%(name)s:%(levelname)s]'
+            'ec2userkeyd[%(process)d]: [%(name)s:%(levelname)s]'
             ' %(message)s'))
         root_logger.addHandler(syslog)
 
