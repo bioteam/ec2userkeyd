@@ -46,9 +46,10 @@ def get_user_from_port(port):
             ['lsof', '-n', f'-i4TCP:{port}'])
         # extract the third space-separated field of the line that
         # contains :{port}->
-        user_match = re.search(f"^\S+\s+\S+\s+(\S+).*:{port}->.*$",
-                               lsof_out.decode('utf-8'),
-                               flags=re.MULTILINE)
+        user_match = re.search(
+            r"^\S+\s+\S+\s+(\S+).*:{port}->.*$".format(port=port),
+            lsof_out.decode('utf-8'),
+            flags=re.MULTILINE)
 
         if user_match:
             username = user_match.group(1)
