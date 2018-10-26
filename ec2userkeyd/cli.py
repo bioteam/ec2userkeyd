@@ -1,6 +1,7 @@
 # Functions related to command-line use
 
 import logging
+import logging.handlers
 
 import click
 
@@ -18,8 +19,8 @@ def setup_logging():
         console = logging.StreamHandler()
         root_logger.addHandler(console)
     
-    if config.general.log_syslog and hasattr(logging, 'SysLogHandler'):
-        syslog = logging.SysLogHandler()
+    if config.general.log_syslog:
+        syslog = logging.handlers.SysLogHandler()
         root_logger.addHandler(syslog)
 
 
