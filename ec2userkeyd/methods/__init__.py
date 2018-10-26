@@ -10,5 +10,4 @@ def sequence_for(username, uid):
     sequence = (config.general.user_credential_methods(username)
                 or config.general.uid_credential_methods(uid)
                 or config.general.credential_methods)
-    print(sequence)
     return [globals()[m]() for m in sequence]

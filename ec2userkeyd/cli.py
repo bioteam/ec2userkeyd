@@ -15,12 +15,22 @@ def setup_logging():
     root_logger = logging.getLogger('')
     root_logger.setLevel(config.general.log_level)
 
+    # let's disable debugging boto logs
+    if config.general.log_level == logging.DEBUG:
+        for module in ['boto3', 'botocore', 'nose']:
+            logging.getLogger(module).setLevel(logging.WARNING)
+    
     if config.general.log_console:
         console = logging.StreamHandler()
+        console.addFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s %(name)s:%(lineno)d %(message)s'))
         root_logger.addHandler(console)
     
     if config.general.log_syslog:
-        syslog = logging.handlers.SysLogHandler()
+        syslog = logging.handlers.SysLogHandler(address='/dev/log')
+        syslog.addFormatter(logging.Formatter(
+            '%(processName)s[%(process)d]: [%(name)s:%(levelname)s]'
+            ' %(message)s'))
         root_logger.addHandler(syslog)
 
 
