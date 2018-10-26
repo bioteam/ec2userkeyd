@@ -87,7 +87,7 @@ class Policy:
             j = s.get('Action') or s.get('NotAction', [])
             inverted = (('Action' in statement and 'NotAction' in s)
                         or ('NotAction' in statement and 'Action' in s))
-            if wildcard_compare(j, i) ^ inverted:
+            if wildcard_compare(j, i) != inverted:
                 action_hits.append(s)
         if not action_hits:
             return False
@@ -99,7 +99,7 @@ class Policy:
             j = s.get('Resource') or s.get('NotResource', [])
             inverted = (('Resource' in statement and 'NotResource' in s)
                         or ('NotResource' in statement and 'Resource' in s))
-            if wildcard_compare(j, i) ^ inverted:
+            if wildcard_compare(j, i) != inverted:
                 resource_hits.append(s)
         
         return bool(resource_hits)

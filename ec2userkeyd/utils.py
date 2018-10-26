@@ -12,15 +12,18 @@ def get_user_from_port(port):
     """Given a TCP source port number, returns the name of the user who
     currently has that port open.
 
-    >>> import socket, getpass
+    >>> import socket, getpass, pwd
     >>> c = socket.create_connection(('google.com', 80))
     >>> port = c.getsockname()[1]
-    >>> username = get_user_from_port(port)
+    >>> username, uid = get_user_from_port(port)
     >>> username == getpass.getuser()
+    True
+    >>> uid == pwd.getpwnam(getpass.getuser()).pw_uid
     True
 
     """
     username = None
+    uid = None
     if platform.system() == 'Linux':
         ss_out = subprocess.check_output(
             ['ss', '-atne', f'sport = :{port}'])
@@ -53,12 +56,13 @@ def get_user_from_port(port):
 
         if user_match:
             username = user_match.group(1)
+            uid = pwd.getpwnam(username).pw_uid
 
     else:
         raise NotImplementedError(
             f'Platform {platform.system()} is not supported')
         
-    return username
+    return username, uid
 
 
 def now():

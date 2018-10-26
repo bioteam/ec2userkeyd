@@ -10,17 +10,19 @@ def test_get_user_from_port_success(mocker):
     mocker.patch('platform.system', return_value='Linux')
     mocker.patch('subprocess.check_output', return_value=SAMPLE_SS_OUT)
     mocker.patch('pwd.getpwuid', return_value=mocker.Mock(pw_name='joe'))
-    u = utils.get_user_from_port(50550)
+    uname, uid = utils.get_user_from_port(50550)
     utils.pwd.getpwuid.assert_called_with(1000)
-    assert u == 'joe'
+    assert uname == 'joe'
+    assert uid == 1000
 
 
 def test_get_user_from_port_fail_1(mocker):
     # here, ss fails to return useful output
     mocker.patch('platform.system', return_value='Linux')
     mocker.patch('subprocess.check_output', return_value=b'nope')
-    u = utils.get_user_from_port(50550)
-    assert u is None
+    uname, uid = utils.get_user_from_port(50550)
+    assert uname is None
+    assert uid is None
 
 
 def test_get_user_from_port_fail_2(mocker):
@@ -28,7 +30,8 @@ def test_get_user_from_port_fail_2(mocker):
     mocker.patch('platform.system', return_value='Linux')
     mocker.patch('subprocess.check_output', return_value=SAMPLE_SS_OUT)
     mocker.patch('pwd.getpwuid', side_effect=KeyError)
-    u = utils.get_user_from_port(50550)
+    uname, uid = utils.get_user_from_port(50550)
     utils.pwd.getpwuid.assert_called_with(1000)
-    assert u is None
+    assert uname is None
+    assert uid == 1000
 

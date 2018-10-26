@@ -1,6 +1,7 @@
-
 import json
 import requests
+import logging
+logger = logging.getLogger(__name__)
 
 from ec2userkeyd import utils
 from ec2userkeyd import clients
@@ -29,6 +30,7 @@ class InstanceRole(BaseCredentialSource):
             # to try to assume our current role but apply an inline
             # restrictive policy.
             try:
+                logger.debug(f'{username}: restricted by {statements}')
                 response = clients.sts.assume_role(
                     RoleArn=clients.current_role_arn(),
                     RoleSessionName=username,
@@ -37,9 +39,11 @@ class InstanceRole(BaseCredentialSource):
             except clients.sts.exceptions.ClientError as ex:
                 if 'AccessDenied' not in str(ex):
                     raise ex
+                logger.debug(str(ex))
                 if self.config.fail_safe:
                     return None
-        
+
+        logger.debug(f'{username}: issued unrestricted instance credentials')
         return requests.get(
             ('http://169.254.169.254/latest/meta-data/iam'
              '/security-credentials/' + role)).json()

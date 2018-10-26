@@ -20,6 +20,6 @@ def test_daemon_start(mocker, mock_config):
     runner = CliRunner()
     result = runner.invoke(cli, ['daemon'])
     assert result.exit_code == 0
-    assert proxy.credential_methods != []
+    proxy.app.run.assert_called_once()
     if os.getuid() == 0:
         proxy.atexit.register.assert_called_once()

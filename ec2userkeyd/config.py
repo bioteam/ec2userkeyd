@@ -1,4 +1,5 @@
 import os
+import re
 import logging
 import configparser
 
@@ -16,13 +17,54 @@ class general:
     # - CreateUserRole
     # - RestrictedInstanceRole
     # - InstanceRole
-    # - UserKeysSecretsManager
     credential_methods = ['UserRole', 'RestrictedInstanceRole', 'InstanceRole']
 
+    per_user_credential_methods = {}
+    per_uid_credential_methods = {}
+    
     log_level = logging.ERROR
     log_console = False
     log_syslog = True
 
+    @classmethod
+    def user_credential_methods(cls, username):
+        """Parse per_user_credential_methods.
+
+        >>> general.per_user_credential_methods = {'joe': 'one, two'}
+        >>> general.user_credential_methods('joe')
+        ['one', 'two']
+        >>> general.user_credential_methods('jane')
+        []
+
+        """
+        if username not in cls.per_user_credential_methods:
+            return []
+        return [i.strip()
+                for i in cls.per_user_credential_methods[username].split(',')]
+
+    @classmethod
+    def uid_credential_methods(cls, uid):
+        """Parse per_uid_credential_methods.
+
+        >>> general.per_uid_credential_methods = {'0-499': 'three, four'}
+        >>> general.uid_credential_methods(250)
+        ['three', 'four']
+        >>> general.uid_credential_methods(500)
+        []
+
+        """
+        seq = None
+        for k in cls.per_uid_credential_methods:
+            if '-' in k:
+                s, e = k.split('-')
+                if int(s) <= uid <= int(e):
+                    seq = cls.per_uid_credential_methods[k]
+            elif int(k) == uid:
+                seq = cls.per_uid_credential_methods[k]
+        if seq:
+            return [i.strip() for i in seq.split(',')]
+        return []
+        
 
 class method_UserRole:
     # This method tries to find a role in the system matching the name
@@ -112,6 +154,14 @@ def update(filename):
                         parsed_val = [i.strip() for i in config_val.split(',')]
                         if all(type(v) == int for v in attr):
                             parsed_val = [int(i) for i in parsed_val]
+                        setattr(klass, option, parsed_val)
+                    elif type(attr) == dict:
+                        config_val = config.get(section, option)
+                        kvs = [i.strip()
+                               for i in re.split(r'(?:,\s+)?(\S+):', config_val)
+                               if i]
+                        iter_kvs = iter(kvs)
+                        parsed_val = {k:v for k, v in zip(iter_kvs, iter_kvs)}
                         setattr(klass, option, parsed_val)
                 except ValueError:
                     raise ValueError(

@@ -41,12 +41,6 @@ def cli(cfgfile, debug, verbose):
 
 @click.command(help="Run the credential serve daemon")
 def daemon():
-    # Instantiate credential methods
-    logger.info(f'Credential methods: {config.general.credential_methods}')
-    proxy.credential_methods = [
-        getattr(methods, method_name)()
-        for method_name in config.general.credential_methods
-    ]
     # Set up iptables rules. Note that there is a brief race here
     # where credential requests may be rejected until the Flask app
     # starts up. There doesn't seem to be a good way to get this to
