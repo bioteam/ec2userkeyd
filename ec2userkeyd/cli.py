@@ -22,13 +22,13 @@ def setup_logging():
     
     if config.general.log_console:
         console = logging.StreamHandler()
-        console.addFormatter(logging.Formatter(
+        console.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s %(name)s:%(lineno)d %(message)s'))
         root_logger.addHandler(console)
     
     if config.general.log_syslog:
         syslog = logging.handlers.SysLogHandler(address='/dev/log')
-        syslog.addFormatter(logging.Formatter(
+        syslog.setFormatter(logging.Formatter(
             '%(processName)s[%(process)d]: [%(name)s:%(levelname)s]'
             ' %(message)s'))
         root_logger.addHandler(syslog)
