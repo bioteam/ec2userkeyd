@@ -2,7 +2,7 @@ flask
 click
 requests
 git+https://github.com/spulec/moto.git
-boto3
+boto3==1.7.84
 setuptools_scm
 pytest
 pytest-mock
