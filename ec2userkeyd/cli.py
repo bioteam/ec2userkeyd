@@ -48,6 +48,6 @@ def daemon():
     # run after Flask starts...
     proxy.Iptables(config.general.daemon_port).activate()
     # Start the daemon
-    proxy.app.run()
+    proxy.app.run(port=config.general.daemon_port)
 cli.add_command(daemon)
 
