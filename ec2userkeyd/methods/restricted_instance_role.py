@@ -28,7 +28,7 @@ class RestrictedInstanceRole(BaseCredentialSource):
                     logger.debug(f'{username}: no statements after compression')
                     return None
             
-            response = clients.sts.assume_role(
+            response = clients.cached_assume_role(
                 RoleArn=clients.current_role_arn(),
                 RoleSessionName=username,
                 Policy=utils.make_iam_policy(statements))

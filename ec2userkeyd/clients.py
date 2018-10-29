@@ -1,4 +1,5 @@
 import re
+import datetime
 
 import boto3
 
@@ -58,3 +59,31 @@ def get_iam_role_policy_statements(rolearn):
         statements.extend(policy.default_version.document['Statement'])
 
     return statements
+
+
+ASSUME_ROLE_CACHE = {}
+
+def cached_assume_role(**kwargs):
+    """Assume role, saving the result in a local cache.
+
+    NOTE: This method will throw exceptions from sts.assume_role.
+
+    """
+    key = (kwargs['RoleArn'], kwargs['RoleSessionName'],
+           hash(kwargs.get('Policy')))
+    if key in ASSUME_ROLE_CACHE:
+        # check if it's expiring - 48% of the time between request and
+        # expiration
+        now = datetime.datetime.now(datetime.timezone.utc)
+        exp = ASSUME_ROLE_CACHE[key]['Credentials']['Expiration']
+        req = ASSUME_ROLE_CACHE[key]['RequestedAt']
+        expire_fraction = 1.0 - ((exp - now) / (exp - req))
+        if expire_fraction > 0.45:
+            del(ASSUME_ROLE_CACHE[key])        
+
+    if key not in ASSUME_ROLE_CACHE:
+        response = sts.assume_role(**kwargs)
+        response['RequestedAt'] = datetime.datetime.now(datetime.timezone.utc)
+        ASSUME_ROLE_CACHE[key] = response
+    
+    return ASSUME_ROLE_CACHE[key]

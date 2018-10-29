@@ -21,7 +21,7 @@ class UserRole(BaseCredentialSource):
         # doesn't exist versus if the role exists but we can't
         # AssumeRole to it.
         try:
-            response = clients.sts.assume_role(
+            response = clients.cached_assume_role(
                 RoleArn=role_arn,
                 RoleSessionName=username)
             return utils.assume_role_response(response)

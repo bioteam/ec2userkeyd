@@ -1,6 +1,8 @@
+import datetime
 
 import pytest
-from moto import mock_iam
+from moto import mock_iam, mock_sts
+from freezegun import freeze_time
 
 from ec2userkeyd import clients, utils
 
@@ -72,6 +74,16 @@ def sim_iam():
 
     mock_iam_instance.stop()
 
+
+@pytest.fixture
+def sim_sts():
+    mock_sts_instance = mock_sts()
+    mock_sts_instance.start()
+
+    yield
+
+    mock_sts_instance.stop()
+
     
 def test_get_iam_user_policy_statements(sim_iam):
     expected_statements = [
@@ -85,3 +97,53 @@ def test_get_iam_user_policy_statements(sim_iam):
     assert len(actual_statements) == len(expected_statements)
     for statement in expected_statements:
         assert statement in actual_statements
+
+
+def test_get_iam_role_policy_statements(sim_iam):
+    expected_statements = [
+        {'Action': 'iam:PutRolePolicy', 'Effect': 'Allow', 'Resource': '*'},
+        {'Action': 'iam:ListPolicyVersions', 'Effect': 'Allow', 'Resource': '*'}
+    ]
+    actual_statements = clients.get_iam_role_policy_statements(
+        'arn:aws:iam::123456789012:role/trl')
+    assert len(actual_statements) == len(expected_statements)
+    for statement in expected_statements:
+        assert statement in actual_statements
+
+        
+def test_cached_assume_role(sim_iam, sim_sts):
+    with freeze_time('Mon, 29 Oct 2018 12:23:52 GMT') as frozen_datetime:
+        first_response = clients.cached_assume_role(
+            RoleArn='arn:aws:iam:::123456789012:role/trl',
+            RoleSessionName='test_cached')
+        assert 'Credentials' in first_response
+        assert 'Expiration' in first_response['Credentials']
+        previous_expiration = first_response['Credentials']['Expiration']
+
+        frozen_datetime.tick()
+        
+        next_response = clients.cached_assume_role(
+            RoleArn='arn:aws:iam:::123456789012:role/trl',
+            RoleSessionName='test_cached')
+        assert next_response['Credentials']['Expiration'] == previous_expiration
+
+        frozen_datetime.tick(delta=datetime.timedelta(seconds=1900))
+
+        next_response = clients.cached_assume_role(
+            RoleArn='arn:aws:iam:::123456789012:role/trl',
+            RoleSessionName='test_cached')
+        assert next_response['Credentials']['Expiration'] > previous_expiration
+        previous_expiration = next_response['Credentials']['Expiration']
+        
+        frozen_datetime.tick()
+
+        # now let's change the request slightly, and confirm that we
+        # get a new response
+
+        next_response = clients.cached_assume_role(
+            RoleArn='arn:aws:iam:::123456789012:role/trl',
+            RoleSessionName='test_cached',
+            Policy='{"foo": "bar"}')
+        assert next_response['Credentials']['Expiration'] > previous_expiration
+
+

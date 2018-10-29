@@ -1,5 +1,5 @@
 # Functions related to command-line use
-
+import os
 import logging
 import logging.handlers
 
@@ -58,6 +58,7 @@ def daemon():
     # run after Flask starts...
     proxy.Iptables(config.general.daemon_port).activate()
     # Start the daemon
+    os.environ['FLASK_ENV'] = 'active'
     proxy.app.run(port=config.general.daemon_port)
 cli.add_command(daemon)
 
