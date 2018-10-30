@@ -57,7 +57,7 @@ def test_user_role_failure(mocker, mock_config):
     def client_error(*args, **kwargs):
         raise user_role.clients.sts.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied'}}, 'AssumeRole')
-    mocker.patch('ec2userkeyd.clients.sts.assume_role',
+    mocker.patch('ec2userkeyd.clients.cached_assume_role',
                  side_effect=client_error)
 
     s = user_role.UserRole()

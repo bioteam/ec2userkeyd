@@ -77,6 +77,8 @@ def cached_assume_role(**kwargs):
         now = datetime.datetime.now(datetime.timezone.utc)
         exp = ASSUME_ROLE_CACHE[key]['Credentials']['Expiration']
         req = ASSUME_ROLE_CACHE[key]['RequestedAt']
+        if exp.tzinfo is None:
+            exp = exp.astimezone(datetime.timezone.utc)
         expire_fraction = 1.0 - ((exp - now) / (exp - req))
         if expire_fraction > 0.45:
             del(ASSUME_ROLE_CACHE[key])        
