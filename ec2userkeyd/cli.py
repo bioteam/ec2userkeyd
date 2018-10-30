@@ -12,11 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logging():
+    try:
+        log_level = getattr(logging, config.general.log_level.upper())
+    except AttributeError:
+        raise Exception(f"Log level not recognized: {config.general.log_level}")
     root_logger = logging.getLogger('')
-    root_logger.setLevel(config.general.log_level)
+    root_logger.setLevel(log_level)
 
     # let's disable debugging boto logs
-    if config.general.log_level == logging.DEBUG:
+    if log_level == logging.DEBUG:
         for module in ['boto3', 'botocore', 'nose', 'urllib3']:
             logging.getLogger(module).setLevel(logging.WARNING)
     
@@ -42,10 +46,10 @@ def setup_logging():
 def cli(cfgfile, debug, verbose):
     config.update(cfgfile)
     if verbose:
-        config.general.log_level = logging.INFO
+        config.general.log_level = 'INFO'
         config.general.log_console = True
     if debug:
-        config.general.log_level = logging.DEBUG
+        config.general.log_level = 'DEBUG'
         
     setup_logging()
         

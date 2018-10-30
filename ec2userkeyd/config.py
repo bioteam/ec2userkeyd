@@ -22,7 +22,7 @@ class general:
     per_user_credential_methods = {}
     per_uid_credential_methods = {}
     
-    log_level = logging.ERROR
+    log_level = 'ERROR'
     log_console = False
     log_syslog = True
 
