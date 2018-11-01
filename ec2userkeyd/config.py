@@ -7,6 +7,21 @@ import configparser
 logger = logging.getLogger(__name__)
 
 
+# Default configuration for ec2userkeyd is below. To override these
+# settings, create a config file (default is /etc/ec2userkeyd.conf) in
+# INI-style format, where section headers ([general]) map to classes
+# below, and keys map to class attributes.
+#
+# Example config file:
+#
+# [general]
+# log_level = WARNING
+# log_console = True
+#
+# [method_UserRole]
+# role_name_pattern = "u{username}"
+
+
 class general:
     daemon_port = 808
 
@@ -80,6 +95,11 @@ class method_CreateUserRole:
     # exists, then the policies are synchronized before assuming.
     iam_name_pattern = "{username}"
     role_name_pattern = "user-{username}"
+
+    # If True, the created role will only be accessible by the
+    # currently active instance role. If False, any role within the
+    # account can access the new role.
+    instance_role_linked = True
 
     
 class method_RestrictedInstanceRole:
