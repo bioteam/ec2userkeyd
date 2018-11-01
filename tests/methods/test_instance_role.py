@@ -12,8 +12,8 @@ from ec2userkeyd.methods import instance_role
 def test_instance_role_straight(mocker, mock_config):
     responses.add(
         responses.GET,
-        'http://169.254.169.254/latest/meta-data/iam/security-credentials/trl',
-        body='{"Code": "Success"}\n'
+        'http://169.254.169.254/latest/meta-data/iam/security-credentials/default-role',
+        body='{"Code": "Success", "AccessKeyId": "test-key"}\n'
     )
     mock_config.update({
         'method_InstanceRole': {
@@ -25,9 +25,9 @@ def test_instance_role_straight(mocker, mock_config):
     mocker.patch('ec2userkeyd.clients.sts.assume_role')
     
     s = instance_role.InstanceRole()
-    r = s.get('joe', 'trl')
+    r = s.get('joe', 'default-role')
     assert not instance_role.clients.sts.assume_role.called
-    assert r == {'Code': 'Success'}
+    assert r['AccessKeyId'] == 'test-key'
 
 
 @responses.activate
