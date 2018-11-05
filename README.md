@@ -3,6 +3,8 @@
 Automatically provide EC2 users with personalized credentials via a
 local daemon intercepting requests to the EC2 metadata service.
 
+![Flow diagram](https://raw.githubusercontent.com/bioteam/ec2userkeyd/b58a67577ceeff6a824997396be59ce7af21035e/ec2userkeyd-diagram.png)
+
 ## Motivation
 
 Currently accepted security best practice for AWS EC2 instances is to
