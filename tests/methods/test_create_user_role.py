@@ -53,8 +53,8 @@ def sim_iam(request):
         role = clients.iam_resource.create_role(
             RoleName='u-john',
             AssumeRolePolicyDocument=utils.make_iam_policy([{
-                'Effect': 'Allow', 'Action': ['sts:AssumeRole'],
-                'Principal': 'arn:aws:iam::123456789012:role/*'
+                'Effect': 'Allow', 'Action': 'sts:AssumeRole',
+                'Principal': {'AWS': 'arn:aws:iam::123456789012:role/*'}
             }])
         )
 
@@ -94,7 +94,8 @@ def sim_iam(request):
 def test_create_user_role(mock_config, sim_iam):
     mock_config.update({
         'method_CreateUserRole': {
-            'role_name_pattern': 'u-{username}'
+            'role_name_pattern': 'u-{username}',
+            'instance_role_linked': False
         }
     })
 
@@ -122,6 +123,16 @@ def test_create_user_role(mock_config, sim_iam):
     user_statements = clients.get_iam_user_policy_statements('john')
     assert ({i['Action'] for i in user_statements}
             == {i['Action'] for i in role_statements})
+
+    # check the role assumerolepolicydocument
+    role = clients.iam_resource.Role('u-john')
+    assert role.assume_role_policy_document == {
+        'Version': '2012-10-17',
+        'Statement': [{
+            'Effect': 'Allow', 'Action': 'sts:AssumeRole',
+            'Principal': {'AWS': 'arn:aws:iam::123456789012:role/*'}
+        }]
+    }
 
 
 def test_create_user_role_no_user(mock_config, sim_iam):

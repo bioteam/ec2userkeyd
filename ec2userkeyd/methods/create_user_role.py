@@ -37,14 +37,14 @@ class CreateUserRole(UserRole):
         if self.config.instance_role_linked:
             assume_role_policy_document = utils.make_iam_policy([{
                 'Action': 'sts:AssumeRole',
-                'Principal': clients.current_role_arn(),
+                'Principal': {'AWS': clients.current_role_arn()},
                 'Effect': 'Allow'
             }])
         else:
             account_id = clients.current_role_arn().split(':')[4]
             assume_role_policy_document = utils.make_iam_policy([{
                 'Action': 'sts:AssumeRole',
-                'Principal': f'arn:aws:iam::{account_id}:role/*',
+                'Principal': {'AWS': f'arn:aws:iam::{account_id}:role/*'},
                 'Effect': 'Allow'
             }])
         
